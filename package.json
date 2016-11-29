@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node_modules/.bin/webpack-dev-server --config webpack.test.config.js"
   },
   "author": "Hendrik Helwich",
   "license": "MIT",
   "devDependencies": {
+    "jasmine-webpack-plugin": "^0.1.1",
     "webpack": "^1.13.3",
     "webpack-dev-server": "^1.16.2"
   },

@@ -19,12 +19,12 @@ const initList = <T>(createElement: () => T) => (size: number) => {
 /** Returns a list of zeros */
 const listZeros = initList(() => 0);
 
-/** Returns a list of pseudo random uniformly distributed numbers in the interval [-1, 1) */ 
+/** Returns a list of pseudo random uniformly distributed numbers in the interval [-1, 1) */
 const listRand = initList(rand);
 
 /** Returns a list of pseudo random normally distributed numbers with given mean and standard deviation */
-const listRandNormal = (mean: number = 0, standardDeviation: number = 1) => 
-    initList(() => randNormal(mean, standardDeviation)); 
+const listRandNormal = (mean: number = 0, standardDeviation: number = 1) =>
+    initList(() => randNormal(mean, standardDeviation));
 
 /** Use uniformly or normally distributed numbers in the initialization of the weights? */
 const useRandNormalInit = true;
@@ -79,7 +79,7 @@ const weightInc = (errors: number[], finalOutputs: number[], hiddenOutputs: numb
 /** Sigmoid function */
 const sigmoid = (x: number) => 1 / (1 + exp(-x));
 
-class NeuralNetwork {
+export class NeuralNetwork {
 
     inputSize: number;
     hiddenSize: number;
@@ -93,13 +93,13 @@ class NeuralNetwork {
     activationFunction: (x: number) => number;
 
     constructor(
-            inputSize: number, hiddenSize: number, outputSize: number, learningRate: number, 
+            inputSize: number, hiddenSize: number, outputSize: number, learningRate: number,
             activationFunction: (x: number) => number = sigmoid) {
         this.inputSize = inputSize;
         this.hiddenSize = hiddenSize;
         this.outputSize = outputSize;
         this.learningRate = learningRate;
-        
+
         this.weightsInputHidden = createWeightMatrix(hiddenSize, inputSize);
         this.weightsHiddenOutput = createWeightMatrix(outputSize, hiddenSize);
 
