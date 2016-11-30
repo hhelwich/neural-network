@@ -9,6 +9,8 @@
   "author": "Hendrik Helwich",
   "license": "MIT",
   "devDependencies": {
+    "@types/jasmine": "^2.5.38",
+    "@types/node": "0.0.1",
     "jasmine-webpack-plugin": "^0.1.1",
     "webpack": "^1.13.3",
     "webpack-dev-server": "^1.16.2"
