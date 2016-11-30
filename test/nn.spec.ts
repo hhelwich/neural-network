@@ -1,20 +1,23 @@
 import { NeuralNetwork } from '../src/nn'
 
 /** Create some test neural network with fixed dimension and weights */
-const nnWithConstantWeights = () => {
-    const nn = new NeuralNetwork(4, 3, 2, 0.05);
-    // Just set some weights that are not random
-    nn.weightsInputHidden = [ // 3x4
-        1/16, -2/16, 3/16, -4/16,
-        5/16, -9/16, 7/16, -8/16,
-        2/16, -1/16, 8/16, -7/16,
-    ];
-    nn.weightsHiddenOutput = [ // 2x3
-      5/8, 4/8, -7/8,
-      1/8, -2/8, 6/8,
-    ];
-    return nn;
-};
+const nnWithConstantWeights = () => new NeuralNetwork({
+    inputSize: 4,
+    hiddenSize: 3,
+    outputSize: 2,
+    learningRate: 0.05,
+    weights: {
+        inputHidden: [ // 3x4
+            1/16, -2/16, 3/16, -4/16,
+            5/16, -9/16, 7/16, -8/16,
+            2/16, -1/16, 8/16, -7/16,
+        ],
+        hiddenOutput: [ // 2x3
+            5/8, 4/8, -7/8,
+            1/8, -2/8, 6/8,
+        ],
+    },
+});
 
 describe('NeuralNetwork', () => {
 

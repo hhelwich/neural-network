@@ -64,8 +64,8 @@ const minus = elementOp((a, b) => a - b);
 
 const fooobar = elementOp((a, b) => a * b * (1 - b));
 
-const fooo = (weights: number[], inputs: number[], inputSize: number, outputSize: number, activationFunction: (x: number) => number) => {
-    return multiply(weights, inputs, outputSize, inputSize, 1).map(activationFunction);
+const fooo = (weights: number[], inputs: number[], inputSize: number, outputSize: number) => {
+    return multiply(weights, inputs, outputSize, inputSize, 1).map(sigmoid);
 };
 
 const weightInc = (errors: number[], finalOutputs: number[], hiddenOutputs: number[],
@@ -79,41 +79,54 @@ const weightInc = (errors: number[], finalOutputs: number[], hiddenOutputs: numb
 /** Sigmoid function */
 const sigmoid = (x: number) => 1 / (1 + exp(-x));
 
+interface NeuralNetworkConfig {
+    inputSize: number,
+    hiddenSize: number,
+    outputSize: number,
+    learningRate: number,
+    weights?: {
+        inputHidden?: number[],
+        hiddenOutput?: number[],
+    },
+}
+
 export class NeuralNetwork {
 
-    inputSize: number;
-    hiddenSize: number;
-    outputSize: number;
+    readonly inputSize: number;
+    readonly hiddenSize: number;
+    readonly outputSize: number;
 
-    weightsInputHidden: number[];
-    weightsHiddenOutput: number[];
+    readonly learningRate: number;
 
-    learningRate: number;
+    private weightsInputHidden: number[];
+    private weightsHiddenOutput: number[];
 
-    activationFunction: (x: number) => number;
+    constructor(config: NeuralNetworkConfig) {
+        this.inputSize = config.inputSize;
+        this.hiddenSize = config.hiddenSize;
+        this.outputSize = config.outputSize;
+        this.learningRate = config.learningRate;
 
-    constructor(
-            inputSize: number, hiddenSize: number, outputSize: number, learningRate: number,
-            activationFunction: (x: number) => number = sigmoid) {
-        this.inputSize = inputSize;
-        this.hiddenSize = hiddenSize;
-        this.outputSize = outputSize;
-        this.learningRate = learningRate;
-
-        this.weightsInputHidden = createWeightMatrix(hiddenSize, inputSize);
-        this.weightsHiddenOutput = createWeightMatrix(outputSize, hiddenSize);
-
-        this.activationFunction = activationFunction;
+        if (config.weights && config.weights.inputHidden) {
+            this.weightsInputHidden = config.weights.inputHidden;
+        } else {
+            this.weightsInputHidden = createWeightMatrix(config.hiddenSize, config.inputSize);
+        }
+        if (config.weights && config.weights.hiddenOutput) {
+            this.weightsHiddenOutput = config.weights.hiddenOutput;
+        } else {
+            this.weightsHiddenOutput = createWeightMatrix(config.outputSize, config.hiddenSize);
+        }
     }
 
     /** Calculate the hidden outputs from the inputs */
     private hiddenOutputs(inputs: number[]) {
-        return fooo(this.weightsInputHidden, inputs, this.inputSize, this.hiddenSize, this.activationFunction);
+        return fooo(this.weightsInputHidden, inputs, this.inputSize, this.hiddenSize);
     }
 
     /** Calculate the final outputs from the hidden outputs */
     private finalOutputs(hidden: number[]) {
-        return fooo(this.weightsHiddenOutput, hidden, this.hiddenSize, this.outputSize, this.activationFunction);
+        return fooo(this.weightsHiddenOutput, hidden, this.hiddenSize, this.outputSize);
     }
 
     /** Calculate the outputs from the inputs */
