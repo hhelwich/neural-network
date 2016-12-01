@@ -62,8 +62,6 @@ const add = elementOp((a, b) => a + b);
 /** Subtract list b from list a */
 const minus = elementOp((a, b) => a - b);
 
-const fooobar = elementOp((a, b) => a * b * (1 - b));
-
 const fooo = (weights: number[], inputs: number[], inputSize: number, outputSize: number) => {
     return multiply(weights, inputs, outputSize, inputSize, 1).map(sigmoid);
 };
@@ -78,6 +76,12 @@ const weightInc = (errors: number[], finalOutputs: number[], hiddenOutputs: numb
 
 /** Sigmoid function */
 const sigmoid = (x: number) => 1 / (1 + exp(-x));
+
+const sigmoidDerivativeFromSigmoid = (sigmoidX: number) => sigmoidX * (1 - sigmoidX);
+
+const sigmoidDerivative = (x: number) => sigmoidDerivativeFromSigmoid(sigmoid(x));
+
+const fooobar = elementOp((a, b) => a * sigmoidDerivativeFromSigmoid(b));
 
 export class NeuralNetwork {
 
@@ -113,22 +117,18 @@ export class NeuralNetwork {
             outputs.push(this.mapLayer(outputs[i], i));
         }
 
-        let n = this.layerSizes.length - 1;
-
-        // calculate error
-        let outputErrors = minus(targets, outputs[n], this.layerSizes[n]);
-        // hidden layer error is the output_errors, split by weights, recombined at hidden nodes
-        const baz = weightInc(outputErrors, outputs[n], outputs[n - 1], this.layerSizes[n], this.layerSizes[n - 1],
-            learningRate);
-        this.weights[n-1] = add(this.weights[n-1], baz);
-
-
-        for (let i = n-1; i > 0; i--) {
-            const hiddenErrors = multiply(outputErrors, this.weights[n-1], 1, this.layerSizes[n], this.layerSizes[n - 1]);
-            n -= 1;
-            const bazz = weightInc(hiddenErrors, outputs[n], outputs[n-1], this.layerSizes[n], this.layerSizes[n-1],
+        let errors;
+        for (let i = this.layerSizes.length - 1; i > 0; i--) {
+            // calculate errors
+            if (!errors) { // errors  for output layer
+                errors = minus(targets, outputs[i], this.layerSizes[i]);
+            } else { // errors for hidden layer
+                errors = multiply(errors, this.weights[i], 1, this.layerSizes[i + 1], this.layerSizes[i]);
+            }     
+            // hidden layer error is the output_errors, split by weights, recombined at hidden nodes
+            const baz = weightInc(errors, outputs[i], outputs[i - 1], this.layerSizes[i], this.layerSizes[i - 1],
                 learningRate);
-            this.weights[n-1] = add(this.weights[n-1], bazz);
+            this.weights[i - 1] = add(this.weights[i - 1], baz);
         }
     }
 
