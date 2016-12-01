@@ -79,72 +79,57 @@ const weightInc = (errors: number[], finalOutputs: number[], hiddenOutputs: numb
 /** Sigmoid function */
 const sigmoid = (x: number) => 1 / (1 + exp(-x));
 
-interface NeuralNetworkConfig {
-    inputSize: number,
-    hiddenSize: number,
-    outputSize: number,
-    weights?: {
-        inputHidden?: number[],
-        hiddenOutput?: number[],
-    },
-}
-
 export class NeuralNetwork {
 
-    readonly inputSize: number;
-    readonly hiddenSize: number;
-    readonly outputSize: number;
+    readonly layerSizes: number[];
 
-    private weightsInputHidden: number[];
-    private weightsHiddenOutput: number[];
+    readonly weights: number[][];
 
-    constructor(config: NeuralNetworkConfig) {
-        this.inputSize = config.inputSize;
-        this.hiddenSize = config.hiddenSize;
-        this.outputSize = config.outputSize;
-
-        if (config.weights && config.weights.inputHidden) {
-            this.weightsInputHidden = config.weights.inputHidden;
-        } else {
-            this.weightsInputHidden = createWeightMatrix(config.hiddenSize, config.inputSize);
-        }
-        if (config.weights && config.weights.hiddenOutput) {
-            this.weightsHiddenOutput = config.weights.hiddenOutput;
-        } else {
-            this.weightsHiddenOutput = createWeightMatrix(config.outputSize, config.hiddenSize);
+    constructor(layerSizes: number[]) {
+        this.layerSizes = layerSizes;
+        this.weights = [];
+        for (let i = 0, len = layerSizes.length - 1; i < len; i++) {
+            this.weights.push(createWeightMatrix(layerSizes[i], layerSizes[i + 1]));
         }
     }
 
-    /** Calculate the hidden outputs from the inputs */
-    private hiddenOutputs(inputs: number[]) {
-        return fooo(this.weightsInputHidden, inputs, this.inputSize, this.hiddenSize);
-    }
-
-    /** Calculate the final outputs from the hidden outputs */
-    private finalOutputs(hidden: number[]) {
-        return fooo(this.weightsHiddenOutput, hidden, this.hiddenSize, this.outputSize);
+    private mapLayer(inputs: number[], layerIndex: number) {
+        return fooo(this.weights[layerIndex], inputs, this.layerSizes[layerIndex], this.layerSizes[layerIndex + 1]);
     }
 
     /** Calculate the outputs from the inputs */
     map(inputs: number[]) {
-        return this.finalOutputs(this.hiddenOutputs(inputs));
+        for (let i = 0, len = this.layerSizes.length - 1; i < len; i++) {
+            inputs = this.mapLayer(inputs, i);
+        }
+        return inputs;
     }
-
 
     /** Train the neural network */
     train(inputs: number[], targets: number[], learningRate: number) {
-        const hiddenOutputs = this.hiddenOutputs(inputs);
-        const finalOutputs = this.finalOutputs(hiddenOutputs);
+        // Calculate output of each layer
+        let outputs: number[][] = [inputs];
+        for (let i = 0, len = this.layerSizes.length - 1; i < len; i++) {
+            outputs.push(this.mapLayer(outputs[i], i));
+        }
+
+        let n = this.layerSizes.length - 1;
 
         // calculate error
-        const outputErrors = minus(targets, finalOutputs, this.outputSize);
+        let outputErrors = minus(targets, outputs[n], this.layerSizes[n]);
         // hidden layer error is the output_errors, split by weights, recombined at hidden nodes
-        const hiddenErrors = multiply(outputErrors, this.weightsHiddenOutput, 1, this.outputSize, this.hiddenSize);
-        const baz = weightInc(outputErrors, finalOutputs, hiddenOutputs, this.outputSize, this.hiddenSize, learningRate);
-        this.weightsHiddenOutput = add(this.weightsHiddenOutput, baz);
+        const baz = weightInc(outputErrors, outputs[n], outputs[n - 1], this.layerSizes[n], this.layerSizes[n - 1],
+            learningRate);
+        this.weights[n-1] = add(this.weights[n-1], baz);
 
-        const bazz = weightInc(hiddenErrors, hiddenOutputs, inputs, this.hiddenSize, this.inputSize, learningRate);
-        this.weightsInputHidden = add(this.weightsInputHidden, bazz);
+
+        for (let i = n-1; i > 0; i--) {
+            const hiddenErrors = multiply(outputErrors, this.weights[n-1], 1, this.layerSizes[n], this.layerSizes[n - 1]);
+            n -= 1;
+            const bazz = weightInc(hiddenErrors, outputs[n], outputs[n-1], this.layerSizes[n], this.layerSizes[n-1],
+                learningRate);
+            this.weights[n-1] = add(this.weights[n-1], bazz);
+        }
     }
 
 }
