@@ -83,7 +83,6 @@ interface NeuralNetworkConfig {
     inputSize: number,
     hiddenSize: number,
     outputSize: number,
-    learningRate: number,
     weights?: {
         inputHidden?: number[],
         hiddenOutput?: number[],
@@ -96,8 +95,6 @@ export class NeuralNetwork {
     readonly hiddenSize: number;
     readonly outputSize: number;
 
-    readonly learningRate: number;
-
     private weightsInputHidden: number[];
     private weightsHiddenOutput: number[];
 
@@ -105,7 +102,6 @@ export class NeuralNetwork {
         this.inputSize = config.inputSize;
         this.hiddenSize = config.hiddenSize;
         this.outputSize = config.outputSize;
-        this.learningRate = config.learningRate;
 
         if (config.weights && config.weights.inputHidden) {
             this.weightsInputHidden = config.weights.inputHidden;
@@ -136,7 +132,7 @@ export class NeuralNetwork {
 
 
     /** Train the neural network */
-    train(inputs: number[], targets: number[]) {
+    train(inputs: number[], targets: number[], learningRate: number) {
         const hiddenOutputs = this.hiddenOutputs(inputs);
         const finalOutputs = this.finalOutputs(hiddenOutputs);
 
@@ -144,10 +140,10 @@ export class NeuralNetwork {
         const outputErrors = minus(targets, finalOutputs, this.outputSize);
         // hidden layer error is the output_errors, split by weights, recombined at hidden nodes
         const hiddenErrors = multiply(outputErrors, this.weightsHiddenOutput, 1, this.outputSize, this.hiddenSize);
-        const baz = weightInc(outputErrors, finalOutputs, hiddenOutputs, this.outputSize, this.hiddenSize, this.learningRate);
+        const baz = weightInc(outputErrors, finalOutputs, hiddenOutputs, this.outputSize, this.hiddenSize, learningRate);
         this.weightsHiddenOutput = add(this.weightsHiddenOutput, baz);
 
-        const bazz = weightInc(hiddenErrors, hiddenOutputs, inputs, this.hiddenSize, this.inputSize, this.learningRate);
+        const bazz = weightInc(hiddenErrors, hiddenOutputs, inputs, this.hiddenSize, this.inputSize, learningRate);
         this.weightsInputHidden = add(this.weightsInputHidden, bazz);
     }
 

@@ -5,7 +5,6 @@ const nnWithConstantWeights = () => new NeuralNetwork({
     inputSize: 4,
     hiddenSize: 3,
     outputSize: 2,
-    learningRate: 0.05,
     weights: {
         inputHidden: [ // 3x4
             1/16, -2/16, 3/16, -4/16,
@@ -40,7 +39,7 @@ describe('NeuralNetwork', () => {
         const output = [0.3, 0.7];
         // WHEN Trained for single input / output
         for (let i = 0; i < 1000; i++) {
-            nn.train(input, output);
+            nn.train(input, output, 0.05);
         }
         // THEN Learns input / output relation
         expect(nn.map(input)).toBeAbout(output, 0.02);
