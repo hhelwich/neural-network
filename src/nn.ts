@@ -1,3 +1,5 @@
+import { sigmoid, sigmoidDerivativeFromSigmoid } from './activation';
+
 const { random, log, sqrt, cos, PI, exp } = Math;
 
 /** Returns a pseudo random uniformly distributed number in the interval [-1, 1) */
@@ -73,13 +75,6 @@ const weightInc = (errors: number[], finalOutputs: number[], hiddenOutputs: numb
     const baz = multiply(bar, hiddenOutputs, outputSize, 1, hiddenSize);
     return baz;
 };
-
-/** Sigmoid function */
-const sigmoid = (x: number) => 1 / (1 + exp(-x));
-
-const sigmoidDerivativeFromSigmoid = (sigmoidX: number) => sigmoidX * (1 - sigmoidX);
-
-const sigmoidDerivative = (x: number) => sigmoidDerivativeFromSigmoid(sigmoid(x));
 
 const fooobar = elementOp((a, b) => a * sigmoidDerivativeFromSigmoid(b));
 

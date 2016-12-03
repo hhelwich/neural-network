@@ -8,4 +8,5 @@ beforeEach(() => {
 
 // Run top level specs
 
+import './activation.spec';
 import './nn.spec';
