@@ -1,4 +1,6 @@
-import { softmax } from '../src/activation'
+import { activation } from '../src/activation'
+
+const { softmax } = activation;
 
 describe('activation functions', () => {
 

@@ -1,5 +1,6 @@
-import { sigmoid, sigmoidDerivativeFromSigmoid } from './activation';
+import { activation } from './activation';
 
+const { sigmoid } = activation;
 const { random, log, sqrt, cos, PI, exp } = Math;
 
 /** Returns a pseudo random uniformly distributed number in the interval [-1, 1) */
@@ -65,7 +66,7 @@ const add = elementOp((a, b) => a + b);
 const minus = elementOp((a, b) => a - b);
 
 const fooo = (weights: number[], inputs: number[], inputSize: number, outputSize: number) => {
-    return multiply(weights, inputs, outputSize, inputSize, 1).map(sigmoid);
+    return multiply(weights, inputs, outputSize, inputSize, 1).map(sigmoid.map);
 };
 
 const weightInc = (errors: number[], finalOutputs: number[], hiddenOutputs: number[],
@@ -76,7 +77,7 @@ const weightInc = (errors: number[], finalOutputs: number[], hiddenOutputs: numb
     return baz;
 };
 
-const fooobar = elementOp((a, b) => a * sigmoidDerivativeFromSigmoid(b));
+const fooobar = elementOp((a, b) => a * sigmoid.derivative(0, b));
 
 export class NeuralNetwork {
 
@@ -119,7 +120,7 @@ export class NeuralNetwork {
                 errors = minus(targets, outputs[i], this.layerSizes[i]);
             } else { // errors for hidden layer
                 errors = multiply(errors, this.weights[i], 1, this.layerSizes[i + 1], this.layerSizes[i]);
-            }     
+            }
             // hidden layer error is the output_errors, split by weights, recombined at hidden nodes
             const baz = weightInc(errors, outputs[i], outputs[i - 1], this.layerSizes[i], this.layerSizes[i - 1],
                 learningRate);
