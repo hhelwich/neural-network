@@ -66,6 +66,18 @@ const minus = elementOp((a, b) => a - b);
 
 const activationFn = activation.sigmoid;
 
+/**
+ * Calculate the weight delta from the gradients and the previous delta.
+ * The learningRate is used to scale the gradients and the momentum to scale the previous delta.
+ */
+const nextDelta = (learningRate: number, momentum: number, gradients: number[], lastDelta?: number[]) => {
+    let delta = gradients.map(x => x * learningRate);
+    if (lastDelta != null) {
+        delta = add(delta, lastDelta.map(d => d * momentum));
+    }
+    return delta;
+};
+
 export class NeuralNetwork {
 
     readonly layerSizes: number[];
@@ -78,6 +90,7 @@ export class NeuralNetwork {
     constructor(layerSizes: number[]) {
         this.layerSizes = layerSizes;
         this.weights = [];
+        this.lastDelta = [];
         for (let i = 0, len = layerSizes.length - 1; i < len; i++) {
             this.weights.push(createWeightMatrix(layerSizes[i], layerSizes[i + 1]));
         }
@@ -145,17 +158,16 @@ export class NeuralNetwork {
 
     update(learningRate: number, momentum: number) {
         const deltas: number[][] = [];
+        // Calculate deltas
+        for (let i = 0; i < this.layerSizes.length - 1; i++) {
+            deltas.push(nextDelta(learningRate, momentum, this.gradients[i], this.lastDelta[i]));
+        }
         // Update weights
         for (let i = 0; i < this.layerSizes.length - 1; i++) {
-            let delta = this.gradients[i].map(x => x * learningRate);
-            if (this.lastDelta != null) {
-                delta = add(delta, this.lastDelta[i].map(d => d * momentum));
-            }
-            deltas.push(delta);
-            this.weights[i] = add(this.weights[i], delta, this.layerSizes[i] * this.layerSizes[i + 1]);
+            this.weights[i] = add(this.weights[i], deltas[i]);
             console.log('new weights', JSON.stringify(this.weights[i], null, 2));
         }
-        this.gradients = undefined;
+        this.gradients = null;
         this.lastDelta = deltas;
     }
 
