@@ -40,7 +40,7 @@ describe('NeuralNetwork', () => {
         const target = [0.2261, 0.9901];
         // WHEN Neuraln network is trained for single input / target
         nn.train(input, target)
-        nn.update(0.2);
+        nn.update(0.2, 0.1);
         // THEN Weights are adapted correctly
         expect(nn.weights[0]).toEqual([
              0.5618988821239669 , 0.41890073431760133, -1.9510987184363544, -0.03319887602716283,  1.4652978944417114,
@@ -69,7 +69,7 @@ describe('NeuralNetwork', () => {
         // WHEN Neuraln network is trained for single input / target
         nn.train(input1, target1);
         nn.train(input2, target2);
-        nn.update(0.2);
+        nn.update(0.2, 0.1);
         // THEN Weights are adapted correctly
         expect(nn.weights[0]).toEqual([
              0.561913737078255  , 0.4190661108261694 , -1.9510666602773625, -0.03318213987779021,  1.4651825706961508,
@@ -87,6 +87,36 @@ describe('NeuralNetwork', () => {
         ]);
     });
 
+    it('double updates the weights as expected', () => {
+        // GIVEN Neural network, inputs and target outputs
+        const nn = nnWithConstantWeights();
+        const input1 = [1.4485, -0.9515, -1.6606, -1.4564, 2.7283];
+        const target1 = [0.2261, 0.9901];
+        const input2 = [0.1145, 1.2747, 0.2471, 0.129, -0.8889];
+        const target2 = [0.1962, 0.1614];
+        // WHEN Neuraln network is trained for single input / target
+        nn.train(input1, target1);
+        nn.update(0.2, 0.4);
+        nn.train(input2, target2);
+        nn.update(0.3, 0.1);
+        // THEN Weights are adapted correctly
+        expect(nn.weights[0]).toEqual([
+             0.5619205898563032, 0.41914371903379033, -1.9510515020408885, -0.03317418093929206,  1.4651282919970234,
+             1.3524060802316902, 0.8693950606341483 , -1.0952792066114758, -1.1413881998999629 ,  0.7952304010016634,
+            -0.3189186611768737, 0.33449516690575576, -0.908826229134397 , -0.7036674041205491 , -1.0155679128527164,
+             0.6003977282697865, 0.29706236969699973,  1.6374916387463478,  0.5247952090168909 , -1.743672266896187 ,
+        ]);
+        expect(nn.weights[1]).toEqual([
+            -1.3178919620614404  , -0.22555572073118602, -1.6699964862109453,  0.0017942522654145103,
+             1.8925348920226959  ,  0.5499192651904593 ,  1.5225119929873534,  1.5384507722412863   ,
+             0.014017134336555501,  0.1276224467182528 ,  0.7453189065584953, -0.31918474512296174  ,
+        ]);
+        expect(nn.weights[2]).toEqual([
+            0.4504029247761763, -0.02875822519703335, -0.572624206611979 ,
+            0.9161764499398662, -0.9808100702986315 , -3.3905367738456067,
+        ]);
+    });
+
     it('maps to expected outputs after training', () => {
         // GIVEN Some neural network, inputs and target outputs
         const nn = nnWithConstantWeights();
@@ -94,7 +124,7 @@ describe('NeuralNetwork', () => {
         const target = [-1.2261, -0.9901];
         // WHEN Trained for single inputs and target outputs pair
         nn.train(input, target);
-        nn.update(0.2);
+        nn.update(0.2, 0.1);
         // THEN Neural network maps random different inputs to verified output
         expect(nn.map([-0.1499, 1.138, 1.4641, -0.5351, -0.9625])).toEqual([0.4278389776217402, 0.07158063410506454]);
     });

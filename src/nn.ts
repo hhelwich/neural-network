@@ -73,6 +73,7 @@ export class NeuralNetwork {
     readonly weights: number[][];
 
     private gradients: number[][];
+    private lastDelta: number[][];
 
     constructor(layerSizes: number[]) {
         this.layerSizes = layerSizes;
@@ -142,13 +143,20 @@ export class NeuralNetwork {
         }
     }
 
-    update(learningRate: number) {
+    update(learningRate: number, momentum: number) {
+        const deltas: number[][] = [];
         // Update weights
         for (let i = 0; i < this.layerSizes.length - 1; i++) {
-            this.weights[i] = add(this.weights[i], this.gradients[i].map(x => x * learningRate),
-                this.layerSizes[i] * this.layerSizes[i + 1]);
+            let delta = this.gradients[i].map(x => x * learningRate);
+            if (this.lastDelta != null) {
+                delta = add(delta, this.lastDelta[i].map(d => d * momentum));
+            }
+            deltas.push(delta);
+            this.weights[i] = add(this.weights[i], delta, this.layerSizes[i] * this.layerSizes[i + 1]);
             console.log('new weights', JSON.stringify(this.weights[i], null, 2));
         }
+        this.gradients = undefined;
+        this.lastDelta = deltas;
     }
 
 }
