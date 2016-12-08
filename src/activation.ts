@@ -1,6 +1,6 @@
 const { exp, max } = Math;
 
-interface ActivationFunction {
+export interface ActivationFunction {
     map: (x: number) => number,
     derivative: (x: number, mapX: number) => number,
 }
