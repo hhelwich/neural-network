@@ -8,6 +8,7 @@ beforeEach(() => {
 
 // Run top level specs
 
+import './random.spec';
 import './activation.spec';
 import './net.spec';
-import './random.spec';
+import './net-examples.spec';

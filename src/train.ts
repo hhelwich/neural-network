@@ -1,4 +1,4 @@
-import { NeuralNetwork } from './nn';
+import { NeuralNetwork } from './net';
 import { add, minus, multiply } from './matrix';
 import { randRange } from './random';
 
@@ -70,7 +70,7 @@ export class Trainer {
         const { input, target } = this.nextData();
         // Forward
         let outputs = this.net.forward(input);
-        console.log('input transformation', JSON.stringify(outputs, null, 2));
+        //console.log('input transformation', JSON.stringify(outputs, null, 2));
         // Backward
         let outDeriv: number[];
         let grads: number[][] = [];
@@ -86,23 +86,23 @@ export class Trainer {
             } else { // errors for hidden layer
                 errors = multiply(outDeriv, this.net.weights[i], 1, this.net.layerSizes[i + 1], this.net.layerSizes[i]);
             }
-            console.log('errors', JSON.stringify(errors, null, 2));
+            //console.log('errors', JSON.stringify(errors, null, 2));
             // apply activation derivative on outputs and multiply with error
             outDeriv = [];
             for (let j = 0; j < size; j++) {
                 outDeriv.push(this.net.activation.derivative(out[j], outAct[j]) * errors[j]);
             }
-            console.log('derivative * errors', JSON.stringify(outDeriv, null, 2));
+            //console.log('derivative * errors', JSON.stringify(outDeriv, null, 2));
             // multiply with error
             grads[i - 1] = multiply(outDeriv, ins, size, 1, ins.length);
-            console.log('gradients', JSON.stringify(grads[i - 1], null, 2));
+            //console.log('gradients', JSON.stringify(grads[i - 1], null, 2));
         }
         if (this.gradients == null) {
             this.gradients = grads;
         } else {
             for (let i = 0; i < grads.length; i++) {
                 this.gradients[i] = add(this.gradients[i], grads[i], grads[i].length);
-                console.log('new gradients', JSON.stringify(this.gradients[i], null, 2));
+                //console.log('new gradients', JSON.stringify(this.gradients[i], null, 2));
             }
         }
         // Update weights if batch is finished
@@ -122,7 +122,7 @@ export class Trainer {
         // Update weights
         for (let i = 0; i < this.net.layerSizes.length - 1; i++) {
             this.net.weights[i] = add(this.net.weights[i], deltas[i]);
-            console.log('new weights', JSON.stringify(this.net.weights[i], null, 2));
+            //console.log('new weights', JSON.stringify(this.net.weights[i], null, 2));
         }
         this.gradients = null;
         this.lastDelta = deltas;
