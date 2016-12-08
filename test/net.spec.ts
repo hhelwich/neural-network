@@ -1,4 +1,4 @@
-import { NeuralNetwork } from '../src/nn';
+import { NeuralNetwork } from '../src/net';
 import { Trainer } from '../src/train';
 
 /** Create some fixed random neural network */
