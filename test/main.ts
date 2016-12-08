@@ -10,3 +10,4 @@ beforeEach(() => {
 
 import './activation.spec';
 import './nn.spec';
+import './random.spec';
