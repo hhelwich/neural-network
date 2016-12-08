@@ -1,6 +1,5 @@
 import { activation } from './activation';
 
-const { sigmoid } = activation;
 const { random, log, sqrt, cos, PI, exp } = Math;
 
 /** Returns a pseudo random uniformly distributed number in the interval [-1, 1) */
@@ -65,19 +64,7 @@ const add = elementOp((a, b) => a + b);
 /** Subtract list b from list a */
 const minus = elementOp((a, b) => a - b);
 
-const fooo = (weights: number[], inputs: number[], inputSize: number, outputSize: number) => {
-    return multiply(weights, inputs, outputSize, inputSize, 1).map(sigmoid.map);
-};
-
-const weightInc = (errors: number[], finalOutputs: number[], hiddenOutputs: number[],
-        outputSize: number, hiddenSize: number, learningRate: number) => {
-    const foo = fooobar(errors, finalOutputs);
-    const bar = foo.map(f => learningRate * f);
-    const baz = multiply(bar, hiddenOutputs, outputSize, 1, hiddenSize);
-    return baz;
-};
-
-const fooobar = elementOp((a, b) => a * sigmoid.derivative(0, b));
+const activationFn = activation.sigmoid;
 
 export class NeuralNetwork {
 
@@ -93,38 +80,56 @@ export class NeuralNetwork {
         }
     }
 
-    private mapLayer(inputs: number[], layerIndex: number) {
-        return fooo(this.weights[layerIndex], inputs, this.layerSizes[layerIndex], this.layerSizes[layerIndex + 1]);
+    /** Map inputs through all layers and return a list of all layer inputs and outputs */
+    private forward(inputs: number[]) {
+        let outputs: number[][] = [inputs];
+        for (let i = 0, len = this.layerSizes.length - 1; i < len; i++) {
+            // Calculate next layer inputs
+            inputs = multiply(this.weights[i], inputs, this.layerSizes[i + 1], this.layerSizes[i], 1);
+            outputs.push(inputs);
+            // Calculate next layer outputs
+            inputs = inputs.map(activationFn.map);
+            outputs.push(inputs);
+        }
+        return outputs;
     }
 
     /** Calculate the outputs from the inputs */
     map(inputs: number[]) {
-        for (let i = 0, len = this.layerSizes.length - 1; i < len; i++) {
-            inputs = this.mapLayer(inputs, i);
-        }
-        return inputs;
+        return this.forward(inputs)[(this.layerSizes.length - 1) * 2];
     }
 
     /** Train the neural network */
     train(inputs: number[], targets: number[], learningRate: number) {
-        // Calculate output of each layer
-        let outputs: number[][] = [inputs];
-        for (let i = 0, len = this.layerSizes.length - 1; i < len; i++) {
-            outputs.push(this.mapLayer(outputs[i], i));
-        }
-
-        let errors;
+        // Forward
+        let outputs = this.forward(inputs);
+        // Backward
+        let outDeriv: number[];
+        let grads: number[][] = [];
         for (let i = this.layerSizes.length - 1; i > 0; i--) {
-            // calculate errors
-            if (!errors) { // errors  for output layer
-                errors = minus(targets, outputs[i], this.layerSizes[i]);
+            const size = this.layerSizes[i];
+            const ins = outputs[i * 2 - 2];
+            const out = outputs[i * 2 - 1];
+            const outAct = outputs[i * 2];
+            let errors: number[];
+            // calculate error
+            if (i === this.layerSizes.length - 1) { // errors for output layer
+                errors = minus(targets, outAct, size); // .map(e => e * 2 / size);
             } else { // errors for hidden layer
-                errors = multiply(errors, this.weights[i], 1, this.layerSizes[i + 1], this.layerSizes[i]);
+                errors = multiply(outDeriv, this.weights[i], 1, this.layerSizes[i + 1], this.layerSizes[i]);
             }
-            // hidden layer error is the output_errors, split by weights, recombined at hidden nodes
-            const baz = weightInc(errors, outputs[i], outputs[i - 1], this.layerSizes[i], this.layerSizes[i - 1],
-                learningRate);
-            this.weights[i - 1] = add(this.weights[i - 1], baz);
+            // apply activation derivative on outputs and multiply with error
+            outDeriv = [];
+            for (let j = 0; j < size; j++) {
+                outDeriv.push(activationFn.derivative(out[j], outAct[j]) * errors[j]);
+            }
+            // multiply with error
+            grads[i - 1] = multiply(outDeriv, ins, size, 1, ins.length);
+        }
+        // Update weights
+        for (let i = 0; i < this.layerSizes.length - 1; i++) {
+            this.weights[i] = add(this.weights[i], grads[i].map(x => x * learningRate),
+                this.layerSizes[i] * this.layerSizes[i + 1]);
         }
     }
 
