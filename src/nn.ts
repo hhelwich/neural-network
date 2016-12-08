@@ -72,6 +72,8 @@ export class NeuralNetwork {
 
     readonly weights: number[][];
 
+    private gradients: number[][];
+
     constructor(layerSizes: number[]) {
         this.layerSizes = layerSizes;
         this.weights = [];
@@ -100,9 +102,10 @@ export class NeuralNetwork {
     }
 
     /** Train the neural network */
-    train(inputs: number[], targets: number[], learningRate: number) {
+    train(inputs: number[], targets: number[]) {
         // Forward
         let outputs = this.forward(inputs);
+        console.log('input transformation', JSON.stringify(outputs, null, 2));
         // Backward
         let outDeriv: number[];
         let grads: number[][] = [];
@@ -118,18 +121,33 @@ export class NeuralNetwork {
             } else { // errors for hidden layer
                 errors = multiply(outDeriv, this.weights[i], 1, this.layerSizes[i + 1], this.layerSizes[i]);
             }
+            console.log('errors', JSON.stringify(errors, null, 2));
             // apply activation derivative on outputs and multiply with error
             outDeriv = [];
             for (let j = 0; j < size; j++) {
                 outDeriv.push(activationFn.derivative(out[j], outAct[j]) * errors[j]);
             }
+            console.log('derivative * errors', JSON.stringify(outDeriv, null, 2));
             // multiply with error
             grads[i - 1] = multiply(outDeriv, ins, size, 1, ins.length);
+            console.log('gradients', JSON.stringify(grads[i - 1], null, 2));
         }
+        if (this.gradients == null) {
+            this.gradients = grads;
+        } else {
+            for (let i = 0; i < grads.length; i++) {
+                this.gradients[i] = add(this.gradients[i], grads[i], grads[i].length);
+                console.log('new gradients', JSON.stringify(this.gradients[i], null, 2));
+            }
+        }
+    }
+
+    update(learningRate: number) {
         // Update weights
         for (let i = 0; i < this.layerSizes.length - 1; i++) {
-            this.weights[i] = add(this.weights[i], grads[i].map(x => x * learningRate),
+            this.weights[i] = add(this.weights[i], this.gradients[i].map(x => x * learningRate),
                 this.layerSizes[i] * this.layerSizes[i + 1]);
+            console.log('new weights', JSON.stringify(this.weights[i], null, 2));
         }
     }
 
