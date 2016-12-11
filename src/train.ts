@@ -2,7 +2,7 @@ import { NeuralNetwork } from './net';
 import { add, minus, multiply } from './matrix';
 import { randRange } from './random';
 
-interface TrainingData {
+export interface TrainingData {
     input: number[],
     target: number[],
 }

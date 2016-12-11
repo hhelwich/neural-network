@@ -9,11 +9,15 @@
   "author": "Hendrik Helwich",
   "license": "MIT",
   "devDependencies": {
+    "@cycle/dom": "^14.2.0",
+    "@cycle/xstream-run": "^4.1.0",
     "@types/jasmine": "^2.5.38",
     "@types/node": "0.0.1",
     "jasmine-webpack-plugin": "^0.1.1",
+    "lodash": "^4.17.2",
     "webpack": "^1.13.3",
-    "webpack-dev-server": "^1.16.2"
+    "webpack-dev-server": "^1.16.2",
+    "xstream": "^9.0.0"
   },
   "dependencies": {
     "immutable": "^3.8.1"
